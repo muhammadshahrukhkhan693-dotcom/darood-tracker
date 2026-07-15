@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Darood Tracker">
+<meta name="theme-color" content="#0B3D2E">
+<title>Darood Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green-deep:#0B3D2E;
+    --green-mid:#14513F;
+    --gold:#C9A227;
+    --gold-light:#E4C55E;
+    --ivory:#FAF7EF;
+    --ivory-dim:#F0EBDC;
+    --ink:#1C1C1C;
+    --ink-soft:#5A5A52;
+    --danger:#A83E3E;
+    --blue:#2B5F72;
+    --radius:16px;
+    --shadow: 0 8px 24px rgba(11,61,46,0.12);
+    --nav-h:64px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--ivory);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  .pattern-strip{
+    height:10px;
+    width:100%;
+    background: repeating-linear-gradient(135deg, var(--gold) 0 6px, transparent 6px 12px);
+    opacity:0.85;
+  }
+  header{
+    background: linear-gradient(160deg, var(--green-deep), var(--green-mid));
+    color:var(--ivory);
+    padding:28px 20px 34px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::before{
+    content:"";
+    position:absolute; top:-40px; right:-40px;
+    width:160px; height:160px;
+    border:2px solid rgba(201,162,39,0.35);
+    transform:rotate(45deg);
+    border-radius:24px;
+  }
+  header::after{
+    content:"";
+    position:absolute; bottom:-60px; left:-30px;
+    width:140px; height:140px;
+    border:2px solid rgba(201,162,39,0.2);
+    transform:rotate(20deg);
+    border-radius:24px;
+  }
+  header h1{
+    font-family:'Amiri', serif;
+    font-size:2.1rem;
+    margin:0 0 4px;
+    position:relative;
+    letter-spacing:0.5px;
+  }
+  header p{
+    margin:0;
+    color:var(--gold-light);
+    font-size:0.92rem;
+    position:relative;
+  }
+  main{
+    max-width:640px;
+    margin:0 auto;
+    padding:22px 16px calc(var(--nav-h) + 28px);
+  }
+  .view{ display:none; }
+  .view.active{ display:block; animation:fadeIn .18s ease; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+  .card{
+    background:#fff;
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px;
+    margin-bottom:18px;
+  }
+  .section-title{
+    font-family:'Amiri', serif;
+    font-size:1.3rem;
+    color:var(--green-deep);
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    justify-content:space-between;
+  }
+  .section-title::before{
+    content:"";
+    display:inline-block;
+    width:6px;height:6px;
+    background:var(--gold);
+    transform:rotate(45deg);
+    flex-shrink:0;
+  }
+  .section-title > span:first-of-type{ flex:1; }
+  .section-controls{ display:flex; gap:6px; }
+  .btn-small{ font-size:0.75rem; padding:6px 10px; }
+  .sub-note{
+    font-size:0.78rem;
+    color:var(--ink-soft);
+    margin:-8px 0 14px;
+  }
+  .add-form{ display:flex; gap:8px; }
+  .add-form.wrap{flex-wrap:wrap;}
+  input[type="text"], input[type="number"]{
+    font-family:'Inter',sans-serif;
+    border:1.5px solid var(--ivory-dim);
+    background:var(--ivory);
+    border-radius:10px;
+    padding:11px 12px;
+    font-size:0.95rem;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s;
+  }
+  input:focus{border-color:var(--gold);}
+  .add-form input[type="text"]{flex:1; min-width:120px;}
+  .add-form input[type="number"]{width:100px;}
+  .search-box{ margin-bottom:14px; }
+  .search-box input{ width:100%; }
+  button{
+    font-family:'Inter',sans-serif;
+    cursor:pointer;
+    border:none;
+    border-radius:10px;
+    font-weight:600;
+    transition:transform .1s, opacity .15s;
+  }
+  button:active{transform:scale(0.96);}
+  .btn-primary{ background:var(--green-deep); color:var(--ivory); padding:11px 18px; font-size:0.95rem; }
+  .btn-gold{ background:var(--gold); color:var(--green-deep); padding:9px 14px; font-size:0.88rem; }
+  .btn-blue{ background:var(--blue); color:var(--ivory); padding:11px 18px; font-size:0.95rem; }
+  .btn-ghost{ background:transparent; color:var(--danger); padding:6px 8px; font-size:0.8rem; font-weight:500; }
+  .stats-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+  .stat-box{
+    background:var(--ivory);
+    border-radius:12px;
+    padding:14px;
+    text-align:center;
+    border:1px solid var(--ivory-dim);
+  }
+  .stat-box.balance{ border-color:var(--gold); background:#FFFBF0; }
+  .stat-box .num{ font-family:'Amiri', serif; font-size:1.5rem; color:var(--green-deep); font-weight:700; display:block; }
+  .stat-box .label{ font-size:0.72rem; color:var(--ink-soft); text-transform:uppercase; letter-spacing:0.5px; }
+  .chart-wrap{ display:flex; align-items:flex-end; gap:8px; height:120px; padding:0 4px; }
+  .bar-col{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bar{ width:100%; max-width:34px; background:linear-gradient(180deg, var(--gold-light), var(--gold)); border-radius:6px 6px 0 0; min-height:3px; transition:height .3s; }
+  .bar-day{ font-size:0.68rem; color:var(--ink-soft); margin-top:6px; }
+  .bar-val{ font-size:0.68rem; color:var(--green-deep); font-weight:600; margin-bottom:3px; }
+  .person-card{ border:1px solid var(--ivory-dim); border-radius:12px; padding:14px; margin-bottom:12px; }
+  .person-card.hidden{ display:none; }
+  .person-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:10px;}
+  .person-name{ font-weight:700; font-size:1.02rem; color:var(--green-deep); }
+  .person-meta{ font-size:0.76rem; color:var(--ink-soft); margin-top:3px; line-height:1.5;}
+  .streak-tag{ background:var(--green-deep); color:var(--gold-light); font-size:0.72rem; padding:3px 9px; border-radius:20px; font-weight:600; white-space:nowrap; }
+  .entry-row{ display:flex; gap:8px; align-items:center; }
+  .entry-row input[type="number"]{ flex:1; min-width:0; width:auto;}
+  .rank-badge{ display:inline-flex; align-items:center; justify-content:center; width:22px;height:22px; border-radius:50%; background:var(--ivory-dim); color:var(--green-deep); font-size:0.75rem; font-weight:700; margin-right:8px; }
+  .rank-badge.gold{ background:var(--gold); color:#fff; }
+  .leaderboard-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--ivory-dim); font-size:0.9rem; }
+  .leaderboard-row:last-child{ border-bottom:none; }
+  .lb-name{ display:flex; align-items:center; }
+  .lb-total{ font-weight:700; color:var(--green-deep); }
+  .given-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--ivory-dim); font-size:0.88rem; }
+  .given-row:last-child{border-bottom:none;}
+  .given-info .g-name{font-weight:700; color:var(--green-deep);}
+  .given-info .g-date{font-size:0.72rem; color:var(--ink-soft);}
+  .given-amt{font-weight:700; color:var(--danger); margin-right:10px;}
+  .empty-state{ text-align:center; padding:26px 10px; color:var(--ink-soft); font-size:0.9rem; }
+  .toast{
+    position:fixed; bottom:calc(var(--nav-h) + 16px); left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--green-deep); color:var(--ivory);
+    padding:11px 20px; border-radius:30px; font-size:0.88rem;
+    box-shadow:var(--shadow); opacity:0; transition:all .25s;
+    pointer-events:none; z-index:200; text-align:center; max-width:85%;
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  .month-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px; }
+  .month-box{
+    background:var(--ivory);
+    border-radius:12px;
+    padding:14px;
+    text-align:center;
+    border:1.5px solid var(--ivory-dim);
+  }
+  .month-box.current-month{ border-color:var(--gold); background:#FFFBF0; }
+  .month-label{ font-size:0.85rem; color:var(--ink-soft); font-weight:600; text-transform:uppercase; margin-bottom:8px; }
+  .month-total{ font-family:'Amiri', serif; font-size:1.8rem; color:var(--green-deep); font-weight:700; }
+  .month-subtext{ font-size:0.72rem; color:var(--ink-soft); margin-top:4px; }
+
+  /* Bottom tab navigation */
+  .bottom-nav{
+    position:fixed;
+    left:0; right:0; bottom:0;
+    max-width:640px;
+    margin:0 auto;
+    height:var(--nav-h);
+    background:#fff;
+    display:flex;
+    box-shadow:0 -6px 20px rgba(11,61,46,0.14);
+    z-index:100;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .nav-item{
+    position:relative;
+    flex:1;
+    background:transparent;
+    border:none;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:3px;
+    color:var(--ink-soft);
+    padding:6px 2px;
+  }
+  .nav-item.active{ color:var(--green-deep); }
+  .nav-item.active::before{
+    content:"";
+    position:absolute; top:0; left:50%;
+    transform:translateX(-50%);
+    width:26px; height:3px;
+    background:var(--gold);
+    border-radius:0 0 4px 4px;
+  }
+  .nav-icon{ font-size:1.3rem; line-height:1; }
+  .nav-label{ font-size:0.65rem; font-weight:700; letter-spacing:0.2px; }
+
+  /* ---------- Counter view ---------- */
+  .rounds-display{ text-align:center; font-size:0.9rem; color:var(--ink-soft); margin-bottom:16px; }
+  .rounds-display b{ color:var(--green-deep); font-size:1.15rem; }
+  .counter-circle-wrap{ display:flex; justify-content:center; margin:6px 0 20px; }
+  .counter-circle{
+    position:relative;
+    width:230px; height:230px;
+    border-radius:50%;
+    background: conic-gradient(var(--gold) calc(var(--progress, 0) * 1%), var(--ivory-dim) 0);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; user-select:none;
+    transition:transform .08s, background .25s;
+    box-shadow:var(--shadow);
+  }
+  .counter-circle:active{ transform:scale(0.96); }
+  .counter-circle-inner{
+    width:188px; height:188px;
+    border-radius:50%;
+    background:#fff;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+  }
+  .counter-digits{ font-family:'Amiri', serif; font-size:3rem; font-weight:700; color:var(--green-deep); line-height:1; }
+  .counter-goal-label{ font-size:0.8rem; color:var(--ink-soft); margin-top:6px; }
+  .counter-percent-badge{
+    position:absolute; top:-8px; left:50%; transform:translateX(-50%);
+    background:var(--gold); color:#fff; font-size:0.75rem; font-weight:700;
+    padding:3px 12px; border-radius:20px; box-shadow:var(--shadow);
+  }
+  .counter-timer{
+    text-align:center; font-family:'Amiri', serif; font-size:1.35rem;
+    color:var(--green-deep); font-weight:700; letter-spacing:1px; margin-bottom:16px;
+  }
+  .counter-controls-row{ display:flex; justify-content:center; gap:16px; margin-bottom:8px; }
+  .ctrl-btn{
+    width:54px; height:54px; border-radius:50%;
+    background:var(--gold); color:var(--green-deep);
+    font-size:1.3rem; display:flex; align-items:center; justify-content:center;
+    box-shadow:var(--shadow);
+  }
+  .ctrl-btn.reset{ background:var(--green-deep); color:var(--ivory); }
+  .toggle-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:11px 0; border-bottom:1px solid var(--ivory-dim); font-size:0.9rem;
+  }
+  .toggle-row:last-child{ border-bottom:none; }
+  .switch{ position:relative; width:44px; height:24px; flex-shrink:0; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .switch .slider{
+    position:absolute; inset:0; cursor:pointer;
+    background:var(--ivory-dim); transition:.2s; border-radius:24px;
+  }
+  .switch .slider::before{
+    content:""; position:absolute; height:18px; width:18px; left:3px; bottom:3px;
+    background:#fff; transition:.2s; border-radius:50%; box-shadow:0 1px 3px rgba(0,0,0,0.3);
+  }
+  .switch input:checked + .slider{ background:var(--green-deep); }
+  .switch input:checked + .slider::before{ transform:translateX(20px); }
+  .history-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:8px 0; border-bottom:1px solid var(--ivory-dim); font-size:0.85rem;
+  }
+  .history-row:last-child{ border-bottom:none; }
+  .history-date{ color:var(--ink-soft); }
+  .history-count{ font-weight:700; color:var(--green-deep); }
+</style>
+</head>
+<body>
+
+<div class="pattern-strip"></div>
+<header>
+  <h1>Darood Tracker</h1>
+  <p>صلى الله عليه وسلم — track daily Darood-e-Pak from everyone</p>
+</header>
+
+<main>
+
+  <!-- HOME -->
+  <div class="view active" id="view-home">
+    <div class="card">
+      <div class="section-title"><span>Collection Totals</span></div>
+      <div class="stats-grid" id="statsGrid"></div>
+    </div>
+    <div class="card">
+      <div class="section-title"><span>Last 7 days</span></div>
+      <div class="chart-wrap" id="chartWrap"></div>
+    </div>
+    <div class="card">
+      <div class="section-title"><span>Monthly Summary</span></div>
+      <div class="month-grid" id="monthlySummary"></div>
+    </div>
+  </div>
+
+  <!-- PEOPLE -->
+  <div class="view" id="view-people">
+    <div class="card">
+      <div class="section-title"><span>Add a person</span></div>
+      <div class="add-form">
+        <input type="text" id="newName" placeholder="Enter name">
+        <button class="btn-primary" onclick="addPerson()">Add</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title"><span>Track Darood</span></div>
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="🔍 Search person by name..." onkeyup="filterPeople()">
+      </div>
+      <div id="peopleList"></div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="view" id="view-leaderboard">
+    <div class="card">
+      <div class="section-title">
+        <span>Leaderboard</span>
+        <div class="section-controls">
+          <button class="btn-gold btn-small" onclick="exportToCSV()">Export</button>
+        </div>
+      </div>
+      <div id="leaderboard"></div>
+    </div>
+  </div>
+
+  <!-- GIVING -->
+  <div class="view" id="view-giving">
+    <div class="card">
+      <div class="section-title"><span>Give / Charity</span></div>
+      <div class="add-form wrap">
+        <input type="text" id="giveRecipient" placeholder="Who received?">
+        <input type="number" id="giveAmount" placeholder="Amount" min="1">
+        <button class="btn-blue" onclick="addGiven()">Record</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title"><span>Giving Stats</span></div>
+      <div class="stats-grid" id="givingStats"></div>
+    </div>
+    <div class="card">
+      <div class="section-title"><span>Giving History</span></div>
+      <div id="givingHistory"></div>
+    </div>
+  </div>
+
+  <!-- COUNTER -->
+  <div class="view" id="view-counter">
+    <div class="card">
+      <div class="section-title"><span>Darood Counter</span></div>
+      <div class="rounds-display">Rounds completed: <b id="ctrRounds">0</b></div>
+      <div class="counter-circle-wrap">
+        <div class="counter-circle" id="counterCircle" style="--progress:0" onclick="tapCounter()">
+          <span class="counter-percent-badge" id="ctrPercent">0%</span>
+          <div class="counter-circle-inner">
+            <div class="counter-digits" id="ctrCount">0</div>
+            <div class="counter-goal-label">of <span id="ctrGoalLabel">100</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="counter-timer" id="ctrTimer">00:00</div>
+      <div class="counter-controls-row">
+        <button class="ctrl-btn" id="ctrPlayBtn" onclick="toggleCounterTimer()">▶</button>
+        <button class="ctrl-btn reset" onclick="resetCounter()">⟲</button>
+      </div>
+      <div class="sub-note" style="text-align:center;">Tap the circle to count each Darood</div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span>Goal &amp; Timer Settings</span></div>
+      <div class="add-form wrap" style="margin-bottom:12px;">
+        <input type="number" id="ctrGoalInput" placeholder="Goal per round" min="1">
+        <button class="btn-gold btn-small" onclick="setCounterGoal()">Set Goal</button>
+      </div>
+      <div class="add-form wrap">
+        <input type="number" id="ctrCountdownInput" placeholder="Countdown minutes (0 = off)" min="0">
+        <button class="btn-gold btn-small" onclick="setCounterCountdown()">Set Timer</button>
+      </div>
+      <div class="toggle-row">
+        <span>🔊 Sound on tap</span>
+        <label class="switch"><input type="checkbox" id="ctrSoundToggle" onchange="toggleSound()"><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <span>📳 Vibration feedback</span>
+        <label class="switch"><input type="checkbox" id="ctrVibrationToggle" onchange="toggleVibration()"><span class="slider"></span></label>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title"><span>Today's Stats</span></div>
+      <div class="stats-grid" id="counterStats"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">
+        <span>Counting History</span>
+        <div class="section-controls">
+          <button class="btn-gold btn-small" onclick="exportCounterCSV()">Export</button>
+        </div>
+      </div>
+      <div id="counterHistory"></div>
+    </div>
+  </div>
+
+</main>
+
+<nav class="bottom-nav">
+  <button type="button" class="nav-item active" data-view="home" onclick="switchView('home')">
+    <span class="nav-icon">🏠</span><span class="nav-label">Home</span>
+  </button>
+  <button type="button" class="nav-item" data-view="people" onclick="switchView('people')">
+    <span class="nav-icon">👥</span><span class="nav-label">People</span>
+  </button>
+  <button type="button" class="nav-item" data-view="leaderboard" onclick="switchView('leaderboard')">
+    <span class="nav-icon">🏆</span><span class="nav-label">Ranks</span>
+  </button>
+  <button type="button" class="nav-item" data-view="giving" onclick="switchView('giving')">
+    <span class="nav-icon">🤲</span><span class="nav-label">Giving</span>
+  </button>
+  <button type="button" class="nav-item" data-view="counter" onclick="switchView('counter')">
+    <span class="nav-icon">📿</span><span class="nav-label">Counter</span>
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let data = { people:[], given:[] };
+
+function loadData(){
+  const stored = localStorage.getItem('daroodTrackerData');
+  if(stored) data = JSON.parse(stored);
+}
+
+function saveData(d){
+  data = d;
+  localStorage.setItem('daroodTrackerData', JSON.stringify(data));
+}
+
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2500);
+}
+
+function todayStr(){
+  const d = new Date();
+  return d.toISOString().split('T')[0];
+}
+
+function dateStrOffset(offset){
+  const d = new Date();
+  d.setDate(d.getDate() + offset);
+  return d.toISOString().split('T')[0];
+}
+
+function isInCurrentMonth(dateStr){
+  const d = new Date();
+  const target = new Date(dateStr);
+  return d.getMonth()===target.getMonth() && d.getFullYear()===target.getFullYear();
+}
+
+function isInCurrentWeek(dateStr){
+  const d = new Date();
+  const target = new Date(dateStr);
+  const diffTime = Math.abs(d - target);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays <= 6;
+}
+
+/* ---------- View switching ---------- */
+function switchView(viewName){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+viewName).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelector('.nav-item[data-view="'+viewName+'"]').classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function addPerson(){
+  const inp = document.getElementById('newName');
+  const name = inp.value.trim();
+  if(!name){ showToast('Enter a name'); return; }
+  const id = Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+  data.people.push({id, name, entries:{}});
+  inp.value='';
+  saveData(data);
+  renderAll();
+  showToast('Added '+name);
+}
+
+function removePerson(id){
+  if(!confirm('Remove this person?')) return;
+  data.people = data.people.filter(p=>p.id!==id);
+  saveData(data);
+  renderAll();
+}
+
+function addEntry(id){
+  const inp = document.getElementById('entry-'+id);
+  const val = parseInt(inp.value,10);
+  if(!val || val<=0){ showToast('Enter a valid count'); return; }
+  const person = data.people.find(p=>p.id===id);
+  const t = todayStr();
+  person.entries[t] = (person.entries[t]||0) + val;
+  inp.value='';
+  saveData(data);
+  renderAll();
+  showToast('Added '+val+' for '+person.name);
+}
+
+function personTotal(person){
+  return Object.values(person.entries).reduce((a,b)=>a+b,0);
+}
+function personMonthTotal(person){
+  return Object.entries(person.entries).filter(([date])=>isInCurrentMonth(date)).reduce((a,[,v])=>a+v,0);
+}
+function personWeekTotal(person){
+  return Object.entries(person.entries).filter(([date])=>isInCurrentWeek(date)).reduce((a,[,v])=>a+v,0);
+}
+function personStreak(person){
+  let streak = 0;
+  let offset = 0;
+  if(!person.entries[todayStr()]) offset = -1;
+  while(true){
+    const ds = dateStrOffset(offset);
+    if(person.entries[ds] && person.entries[ds]>0){ streak++; offset--; }
+    else break;
+  }
+  return streak;
+}
+
+function grandTotal(){ return data.people.reduce((a,p)=>a+personTotal(p),0); }
+function todayTotal(){ return data.people.reduce((a,p)=>a+(p.entries[todayStr()]||0),0); }
+function weekTotal(){ return data.people.reduce((a,p)=>a+personWeekTotal(p),0); }
+function monthTotal(){ return data.people.reduce((a,p)=>a+personMonthTotal(p),0); }
+
+function totalGiven(){ return data.given.reduce((a,g)=>a+g.amount,0); }
+function balance(){ return grandTotal() - totalGiven(); }
+
+function addGiven(){
+  const nameInp = document.getElementById('giveRecipient');
+  const amtInp = document.getElementById('giveAmount');
+  const name = nameInp.value.trim();
+  const amt = parseInt(amtInp.value,10);
+  if(!name){ showToast('Enter who you gave it to'); return; }
+  if(!amt || amt<=0){ showToast('Enter a valid amount'); return; }
+  if(amt > balance()){
+    if(!confirm('This is more than your current balance ('+balance().toLocaleString()+'). Record it anyway?')) return;
+  }
+  data.given.push({
+    id: Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+    recipient: name,
+    amount: amt,
+    date: todayStr()
+  });
+  nameInp.value=''; amtInp.value='';
+  saveData(data);
+  renderAll();
+  showToast('Recorded: gave '+amt+' to '+name);
+}
+function removeGiven(id){
+  if(!confirm('Remove this record?')) return;
+  data.given = data.given.filter(g=>g.id!==id);
+  saveData(data);
+  renderAll();
+}
+
+function renderStats(){
+  const grid = document.getElementById('statsGrid');
+  grid.innerHTML = `
+    <div class="stat-box"><span class="num">${todayTotal().toLocaleString()}</span><span class="label">Today</span></div>
+    <div class="stat-box"><span class="num">${weekTotal().toLocaleString()}</span><span class="label">This Week</span></div>
+    <div class="stat-box"><span class="num">${monthTotal().toLocaleString()}</span><span class="label">This Month</span></div>
+    <div class="stat-box"><span class="num">${grandTotal().toLocaleString()}</span><span class="label">Grand Total</span></div>
+    <div class="stat-box"><span class="num">${data.people.length}</span><span class="label">People</span></div>
+    <div class="stat-box"><span class="num">${data.people.reduce((m,p)=>Math.max(m,personStreak(p)),0)}</span><span class="label">Best Streak</span></div>
+  `;
+}
+
+function renderGivingStats(){
+  const grid = document.getElementById('givingStats');
+  grid.innerHTML = `
+    <div class="stat-box balance"><span class="num">${balance().toLocaleString()}</span><span class="label">Available Balance</span></div>
+    <div class="stat-box"><span class="num">${totalGiven().toLocaleString()}</span><span class="label">Total Given</span></div>
+  `;
+}
+
+function renderChart(){
+  const wrap = document.getElementById('chartWrap');
+  const days = [];
+  for(let i=-6;i<=0;i++){
+    const ds = dateStrOffset(i);
+    const total = data.people.reduce((a,p)=>a+(p.entries[ds]||0),0);
+    days.push({ds,total});
+  }
+  const max = Math.max(...days.map(d=>d.total), 1);
+  wrap.innerHTML = days.map(d=>{
+    const h = Math.round((d.total/max)*90)+ (d.total>0?10:2);
+    const dayLabel = new Date(d.ds+'T00:00:00').toLocaleDateString('en-US',{weekday:'short'}).slice(0,2);
+    return `<div class="bar-col">
+      <span class="bar-val">${d.total>0?d.total:''}</span>
+      <div class="bar" style="height:${h}px"></div>
+      <span class="bar-day">${dayLabel}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderMonthlySummary(){
+  const box = document.getElementById('monthlySummary');
+  const months = {};
+  const now = new Date();
+
+  for(let i=11;i>=0;i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const key = d.toISOString().split('T')[0].substring(0,7);
+    months[key] = 0;
+  }
+
+  data.people.forEach(p=>{
+    Object.entries(p.entries).forEach(([date, count])=>{
+      const monthKey = date.substring(0,7);
+      if(months.hasOwnProperty(monthKey)){
+        months[monthKey] += count;
+      }
+    });
+  });
+
+  const currentMonth = now.toISOString().split('T')[0].substring(0,7);
+
+  box.innerHTML = Object.entries(months).map(([monthKey, total])=>{
+    const [year, month] = monthKey.split('-');
+    const date = new Date(year, parseInt(month)-1, 1);
+    const label = date.toLocaleDateString('en-US', {month:'short', year:'2-digit'});
+    const isCurrent = monthKey === currentMonth;
+    return `<div class="month-box ${isCurrent?'current-month':''}">
+      <div class="month-label">${label}</div>
+      <div class="month-total">${total.toLocaleString()}</div>
+      <div class="month-subtext">${data.people.length} people</div>
+    </div>`;
+  }).join('');
+}
+
+function renderPeople(){
+  const list = document.getElementById('peopleList');
+  if(data.people.length===0){
+    list.innerHTML = `<div class="empty-state">No one added yet. Add someone above to start tracking their Darood-e-Pak.</div>`;
+    return;
+  }
+  list.innerHTML = data.people.map(p=>{
+    const total = personTotal(p);
+    const streak = personStreak(p);
+    const todayCount = p.entries[todayStr()]||0;
+    const monthCount = personMonthTotal(p);
+    const weekCount = personWeekTotal(p);
+    return `
+    <div class="person-card" data-name="${escapeHtml(p.name).toLowerCase()}">
+      <div class="person-top">
+        <div>
+          <div class="person-name">${escapeHtml(p.name)}</div>
+          <div class="person-meta">Total: ${total.toLocaleString()} &nbsp;•&nbsp; This month: ${monthCount.toLocaleString()} &nbsp;•&nbsp; This week: ${weekCount.toLocaleString()} &nbsp;•&nbsp; Today: ${todayCount}</div>
+        </div>
+        <span class="streak-tag">${streak>0? '🔥 '+streak+'d':'No streak'}</span>
+      </div>
+      <div class="entry-row">
+        <input type="number" id="entry-${p.id}" placeholder="Add today's count" min="1">
+        <button class="btn-gold" onclick="addEntry('${p.id}')">Add</button>
+        <button class="btn-ghost" onclick="removePerson('${p.id}')">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterPeople(){
+  const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+  const cards = document.querySelectorAll('.person-card');
+  cards.forEach(card => {
+    const name = card.getAttribute('data-name');
+    if(searchVal === '' || name.includes(searchVal)){
+      card.classList.remove('hidden');
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+}
+
+function renderLeaderboard(){
+  const board = document.getElementById('leaderboard');
+  if(data.people.length===0){
+    board.innerHTML = `<div class="empty-state">Leaderboard will appear once people start reciting.</div>`;
+    return;
+  }
+  const sorted = [...data.people].sort((a,b)=>personTotal(b)-personTotal(a));
+  board.innerHTML = sorted.map((p,i)=>{
+    const total = personTotal(p);
+    const badgeClass = i===0 ? 'rank-badge gold' : 'rank-badge';
+    return `<div class="leaderboard-row">
+      <span class="lb-name"><span class="${badgeClass}">${i+1}</span>${escapeHtml(p.name)}</span>
+      <span class="lb-total">${total.toLocaleString()}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderGivingHistory(){
+  const box = document.getElementById('givingHistory');
+  if(data.given.length===0){
+    box.innerHTML = `<div class="empty-state">Nothing given yet. Records you add above will show here.</div>`;
+    return;
+  }
+  const ordered = [...data.given].sort((a,b)=> (b.date+b.id).localeCompare(a.date+a.id));
+  box.innerHTML = ordered.map(g=>{
+    const dLabel = new Date(g.date+'T00:00:00').toLocaleDateString('en-US',{month:'short', day:'numeric', year:'numeric'});
+    return `<div class="given-row">
+      <div class="given-info">
+        <div class="g-name">${escapeHtml(g.recipient)}</div>
+        <div class="g-date">${dLabel}</div>
+      </div>
+      <div>
+        <span class="given-amt">-${g.amount.toLocaleString()}</span>
+        <button class="btn-ghost" onclick="removeGiven('${g.id}')">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function exportToCSV(){
+  if(data.people.length === 0){
+    showToast('No data to export');
+    return;
+  }
+  let csv = 'Name,Total,This Month,This Week,Today,Best Streak\n';
+  data.people.forEach(p => {
+    const total = personTotal(p);
+    const month = personMonthTotal(p);
+    const week = personWeekTotal(p);
+    const today = p.entries[todayStr()] || 0;
+    const streak = personStreak(p);
+    csv += `"${p.name}",${total},${month},${week},${today},${streak}\n`;
+  });
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'darood-tracker-export-' + todayStr() + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+  showToast('Exported to CSV');
+}
+
+/* ================= Counter Feature ================= */
+let counterData = { goal:100, rounds:0, sessionCount:0, soundOn:true, vibrationOn:true, countdownTarget:0, elapsedSeconds:0, log:{} };
+let counterTimerInterval = null;
+let counterRunning = false;
+let audioCtx = null;
+
+function loadCounterData(){
+  const stored = localStorage.getItem('daroodCounterData');
+  if(stored){
+    try{ counterData = Object.assign(counterData, JSON.parse(stored)); }catch(e){}
+  }
+}
+
+function saveCounterData(){
+  localStorage.setItem('daroodCounterData', JSON.stringify(counterData));
+}
+
+function playBeep(freq, duration){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  }catch(e){}
+}
+
+function vibrateFeedback(pattern){
+  if(navigator.vibrate) navigator.vibrate(pattern);
+}
+
+function tapCounter(){
+  counterData.sessionCount++;
+  const t = todayStr();
+  counterData.log[t] = (counterData.log[t]||0) + 1;
+
+  if(counterData.soundOn) playBeep(880, 0.07);
+  if(counterData.vibrationOn) vibrateFeedback(35);
+
+  if(counterData.sessionCount >= counterData.goal){
+    counterData.rounds++;
+    counterData.sessionCount = 0;
+    if(counterData.soundOn) playBeep(1300, 0.25);
+    if(counterData.vibrationOn) vibrateFeedback([60,40,60]);
+    showToast('🎉 Round complete! Total rounds: ' + counterData.rounds);
+    notifyCounterCompletion();
+  }
+  saveCounterData();
+  renderCounter();
+}
+
+function notifyCounterCompletion(){
+  if('Notification' in window){
+    if(Notification.permission === 'granted'){
+      new Notification('Darood Tracker', {body:"Masha'Allah! Your round target has been reached."});
+    } else if(Notification.permission !== 'denied'){
+      Notification.requestPermission();
+    }
+  }
+}
+
+function toggleCounterTimer(){
+  counterRunning = !counterRunning;
+  const btn = document.getElementById('ctrPlayBtn');
+  if(counterRunning){
+    btn.textContent = '⏸';
+    counterTimerInterval = setInterval(tickCounterTimer, 1000);
+  } else {
+    btn.textContent = '▶';
+    clearInterval(counterTimerInterval);
+  }
+}
+
+function tickCounterTimer(){
+  counterData.elapsedSeconds++;
+  if(counterData.countdownTarget > 0){
+    const remaining = counterData.countdownTarget - counterData.elapsedSeconds;
+    if(remaining <= 0){
+      clearInterval(counterTimerInterval);
+      counterRunning = false;
+      document.getElementById('ctrPlayBtn').textContent = '▶';
+      showToast("⏰ Time's up!");
+      if(counterData.soundOn) playBeep(600, 0.3);
+      if(counterData.vibrationOn) vibrateFeedback([100,60,100]);
+      counterData.elapsedSeconds = 0;
+      saveCounterData();
+      renderCounterTimerDisplay();
+      return;
+    }
+  }
+  saveCounterData();
+  renderCounterTimerDisplay();
+}
+
+function renderCounterTimerDisplay(){
+  const el = document.getElementById('ctrTimer');
+  if(!el) return;
+  let displaySeconds;
+  if(counterData.countdownTarget > 0){
+    displaySeconds = Math.max(0, counterData.countdownTarget - counterData.elapsedSeconds);
+  } else {
+    displaySeconds = counterData.elapsedSeconds;
+  }
+  const m = Math.floor(displaySeconds/60).toString().padStart(2,'0');
+  const s = (displaySeconds%60).toString().padStart(2,'0');
+  el.textContent = m + ':' + s;
+}
+
+function resetCounter(){
+  if(!confirm('Reset current session count and timer? (Your daily history is kept)')) return;
+  clearInterval(counterTimerInterval);
+  counterRunning = false;
+  document.getElementById('ctrPlayBtn').textContent = '▶';
+  counterData.sessionCount = 0;
+  counterData.elapsedSeconds = 0;
+  saveCounterData();
+  renderCounter();
+}
+
+function setCounterGoal(){
+  const inp = document.getElementById('ctrGoalInput');
+  const val = parseInt(inp.value, 10);
+  if(!val || val<=0){ showToast('Enter a valid goal'); return; }
+  counterData.goal = val;
+  inp.value = '';
+  inp.placeholder = 'Goal per round (current: ' + val + ')';
+  saveCounterData();
+  renderCounter();
+  showToast('Goal set to ' + val);
+}
+
+function setCounterCountdown(){
+  const inp = document.getElementById('ctrCountdownInput');
+  const mins = parseFloat(inp.value);
+  if(isNaN(mins) || mins<0){ showToast('Enter valid minutes'); return; }
+  counterData.countdownTarget = mins>0 ? Math.round(mins*60) : 0;
+  counterData.elapsedSeconds = 0;
+  inp.value = '';
+  saveCounterData();
+  renderCounterTimerDisplay();
+  showToast(mins>0 ? 'Countdown set to ' + mins + ' min' : 'Countdown disabled (count-up mode)');
+}
+
+function toggleSound(){
+  counterData.soundOn = document.getElementById('ctrSoundToggle').checked;
+  saveCounterData();
+}
+
+function toggleVibration(){
+  counterData.vibrationOn = document.getElementById('ctrVibrationToggle').checked;
+  saveCounterData();
+}
+
+function counterWeekTotal(){
+  let total = 0;
+  for(let i=0; i>-7; i--){
+    total += counterData.log[dateStrOffset(i)] || 0;
+  }
+  return total;
+}
+
+function counterStreak(){
+  let streak = 0;
+  let offset = 0;
+  if(!counterData.log[todayStr()]) offset = -1;
+  while(true){
+    const ds = dateStrOffset(offset);
+    if(counterData.log[ds] && counterData.log[ds]>0){ streak++; offset--; }
+    else break;
+  }
+  return streak;
+}
+
+function counterBestStreak(){
+  const dates = Object.keys(counterData.log).filter(d=>counterData.log[d]>0).sort();
+  if(dates.length===0) return 0;
+  let best = 1, cur = 1;
+  for(let i=1; i<dates.length; i++){
+    const prev = new Date(dates[i-1]+'T00:00:00');
+    const currD = new Date(dates[i]+'T00:00:00');
+    const diffDays = Math.round((currD-prev)/(1000*60*60*24));
+    if(diffDays===1){ cur++; best = Math.max(best, cur); }
+    else cur = 1;
+  }
+  return Math.max(best, counterStreak());
+}
+
+function renderCounter(){
+  const pct = Math.min(100, Math.round((counterData.sessionCount/counterData.goal)*100));
+  document.getElementById('counterCircle').style.setProperty('--progress', pct);
+  document.getElementById('ctrPercent').textContent = pct + '%';
+  document.getElementById('ctrCount').textContent = counterData.sessionCount;
+  document.getElementById('ctrGoalLabel').textContent = counterData.goal;
+  document.getElementById('ctrRounds').textContent = counterData.rounds;
+  document.getElementById('ctrSoundToggle').checked = counterData.soundOn;
+  document.getElementById('ctrVibrationToggle').checked = counterData.vibrationOn;
+  renderCounterTimerDisplay();
+  renderCounterStats();
+  renderCounterHistory();
+}
+
+function renderCounterStats(){
+  const grid = document.getElementById('counterStats');
+  const today = counterData.log[todayStr()] || 0;
+  grid.innerHTML = `
+    <div class="stat-box"><span class="num">${today.toLocaleString()}</span><span class="label">Today</span></div>
+    <div class="stat-box"><span class="num">${counterWeekTotal().toLocaleString()}</span><span class="label">This Week</span></div>
+    <div class="stat-box"><span class="num">${counterStreak()}</span><span class="label">Current Streak</span></div>
+    <div class="stat-box"><span class="num">${counterBestStreak()}</span><span class="label">Best Streak</span></div>
+  `;
+}
+
+function renderCounterHistory(){
+  const box = document.getElementById('counterHistory');
+  const dates = Object.keys(counterData.log).filter(d=>counterData.log[d]>0).sort().reverse().slice(0,14);
+  if(dates.length===0){
+    box.innerHTML = `<div class="empty-state">No counting sessions yet. Tap the circle above to begin.</div>`;
+    return;
+  }
+  box.innerHTML = dates.map(d=>{
+    const label = new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short', day:'numeric', year:'numeric'});
+    return `<div class="history-row"><span class="history-date">${label}</span><span class="history-count">${counterData.log[d].toLocaleString()}</span></div>`;
+  }).join('');
+}
+
+function exportCounterCSV(){
+  const dates = Object.keys(counterData.log).sort();
+  if(dates.length===0){ showToast('No data to export'); return; }
+  let csv = 'Date,Count\n';
+  dates.forEach(d=>{ csv += `${d},${counterData.log[d]}\n`; });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'darood-counter-export-' + todayStr() + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.URL.revokeObjectURL(url);
+  showToast('Exported counting history to CSV');
+}
+
+function initCounter(){
+  loadCounterData();
+  document.getElementById('ctrGoalInput').placeholder = 'Goal per round (current: ' + counterData.goal + ')';
+  renderCounter();
+}
+/* ================ End Counter Feature ================ */
+
+function renderAll(){
+  renderStats();
+  renderChart();
+  renderMonthlySummary();
+  renderPeople();
+  renderLeaderboard();
+  renderGivingStats();
+  renderGivingHistory();
+}
+
+document.getElementById('newName').addEventListener('keydown', e=>{
+  if(e.key==='Enter') addPerson();
+});
+document.getElementById('giveAmount').addEventListener('keydown', e=>{
+  if(e.key==='Enter') addGiven();
+});
+
+loadData();
+renderAll();
+initCounter();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+
+</body>
+</html>
